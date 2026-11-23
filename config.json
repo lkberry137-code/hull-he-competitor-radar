@@ -1,0 +1,168 @@
+{
+  "pilot_name": "University of Hull — HE Competitor & Web/SEO Intelligence Radar",
+  "default_subject": "Business Management",
+  "institutions": [
+    {
+      "institution_id": "hull",
+      "name": "University of Hull",
+      "is_hull": true,
+      "cohorts": ["Baseline"],
+      "tef_rating": "Gold",
+      "times_rank": 64,
+      "guardian_rank": 74,
+      "cug_rank": 54,
+      "subject_rank_times": 57,
+      "subject_rank_guardian": 58,
+      "subject_rank_cug": 52
+    },
+    {
+      "institution_id": "leeds-beckett",
+      "name": "Leeds Beckett University",
+      "is_hull": false,
+      "cohorts": ["Local", "Tariff Peers", "League Table Peers"],
+      "tef_rating": "Silver",
+      "times_rank": 116,
+      "guardian_rank": 103,
+      "cug_rank": 110,
+      "subject_rank_times": null,
+      "subject_rank_guardian": null,
+      "subject_rank_cug": null
+    },
+    {
+      "institution_id": "york-st-john",
+      "name": "York St John University",
+      "is_hull": false,
+      "cohorts": ["Local", "Tariff Peers", "League Table Peers"],
+      "tef_rating": "Silver",
+      "times_rank": 100,
+      "guardian_rank": 80,
+      "cug_rank": 96,
+      "subject_rank_times": null,
+      "subject_rank_guardian": null,
+      "subject_rank_cug": null
+    },
+    {
+      "institution_id": "lincoln",
+      "name": "University of Lincoln",
+      "is_hull": false,
+      "cohorts": ["Local", "Tariff Peers", "League Table Peers"],
+      "tef_rating": "Gold",
+      "times_rank": 59,
+      "guardian_rank": 66,
+      "cug_rank": 62,
+      "subject_rank_times": null,
+      "subject_rank_guardian": null,
+      "subject_rank_cug": null
+    },
+    {
+      "institution_id": "sheffield-hallam",
+      "name": "Sheffield Hallam University",
+      "is_hull": false,
+      "cohorts": ["Local", "Tariff Peers", "League Table Peers"],
+      "tef_rating": "Gold",
+      "times_rank": 87,
+      "guardian_rank": 76,
+      "cug_rank": 79,
+      "subject_rank_times": null,
+      "subject_rank_guardian": null,
+      "subject_rank_cug": null
+    },
+    {
+      "institution_id": "york",
+      "name": "University of York",
+      "is_hull": false,
+      "cohorts": ["Local", "Aspirational / Russell Group"],
+      "tef_rating": "Gold",
+      "times_rank": 17,
+      "guardian_rank": 19,
+      "cug_rank": 17,
+      "subject_rank_times": null,
+      "subject_rank_guardian": null,
+      "subject_rank_cug": null
+    },
+    {
+      "institution_id": "leeds",
+      "name": "University of Leeds",
+      "is_hull": false,
+      "cohorts": ["Local", "Aspirational / Russell Group"],
+      "tef_rating": "Silver",
+      "times_rank": 23,
+      "guardian_rank": 28,
+      "cug_rank": 22,
+      "subject_rank_times": null,
+      "subject_rank_guardian": null,
+      "subject_rank_cug": null
+    }
+  ],
+  "courses": [
+    {
+      "course_key": "hull-bm-ug",
+      "institution_id": "hull",
+      "subject_area": "Business Management",
+      "course_title": "BA (Hons) Business Management",
+      "degree_type": "BA (Hons)",
+      "ucas_code": "N200",
+      "url": "https://www.hull.ac.uk/study/undergraduate/courses/business-management-ba-hons"
+    },
+    {
+      "course_key": "leeds-beckett-bm-ug",
+      "institution_id": "leeds-beckett",
+      "subject_area": "Business Management",
+      "course_title": "BA (Hons) Business and Management",
+      "degree_type": "BA (Hons)",
+      "ucas_code": "NND2",
+      "url": "https://www.leedsbeckett.ac.uk/courses/business-management-ba/",
+      "ucas_fallback_modules": {
+        "modules_yr1": "Entrepreneurial Strategy (Core), Global Business Environment (Core), Marketing & the Digital Customer Experience (Core), Accounting & Finance for Managers (Core), Data Decisions & Understanding AI (Core), Managing Organisations & People (Core)",
+        "modules_yr2": "Managerial Decision Making (Core), Future Focused Management for Sustainability (Core), Business Finance (Core), Developing Professional & Employability Skills (Core), Operations & Supply Chain Management (Core), Managing a Small & Sustainable Business (Core)",
+        "modules_yr3": "Business Strategy (Core), Strategic Human Resource Management for Leaders (Core), Governance, Ethics & Corporate Social Responsibility (Core), Leading Innovation & Change (Core), plus selected option modules",
+        "source_label": "UCAS (NND2)"
+      }
+    },
+    {
+      "course_key": "york-st-john-bm-ug",
+      "institution_id": "york-st-john",
+      "subject_area": "Business Management",
+      "course_title": "BA (Hons) Business Management",
+      "degree_type": "BA (Hons)",
+      "ucas_code": "N202",
+      "url": "https://www.yorksj.ac.uk/courses/undergraduate/business-management/business-management-ba-hons/"
+    },
+    {
+      "course_key": "lincoln-bm-ug",
+      "institution_id": "lincoln",
+      "subject_area": "Business Management",
+      "course_title": "BSc (Hons) Business and Management",
+      "degree_type": "BSc (Hons)",
+      "ucas_code": "NN15",
+      "url": "https://www.lincoln.ac.uk/course/bmgtbsub/"
+    },
+    {
+      "course_key": "sheffield-hallam-bm-ug",
+      "institution_id": "sheffield-hallam",
+      "subject_area": "Business Management",
+      "course_title": "BA (Hons) Business Management",
+      "degree_type": "BA (Hons)",
+      "ucas_code": "N201",
+      "url": "https://www.shu.ac.uk/courses/Business-and-management/BA-Honours-Business-Management/Full-time"
+    },
+    {
+      "course_key": "york-bm-ug",
+      "institution_id": "york",
+      "subject_area": "Business Management",
+      "course_title": "BA (Hons) Business and Management",
+      "degree_type": "BA (Hons)",
+      "ucas_code": "N200",
+      "url": "https://www.york.ac.uk/study/undergraduate/courses/ba-business-management/"
+    },
+    {
+      "course_key": "leeds-bm-ug",
+      "institution_id": "leeds",
+      "subject_area": "Business Management",
+      "course_title": "BA Business Management",
+      "degree_type": "BA",
+      "ucas_code": "N200",
+      "url": "https://courses.leeds.ac.uk/i475/business-management-ba"
+    }
+  ]
+}

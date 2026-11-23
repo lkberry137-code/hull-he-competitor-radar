@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>University of Hull — HE Competitor &amp; Web/SEO Radar</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-alt: #263349;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --hull: #38bdf8;
+      --hull-bg: rgba(56, 189, 248, 0.12);
+      --green: #22c55e;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --accent: #6366f1;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    header {
+      background: linear-gradient(135deg, #0b1220, #1e293b);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 28px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    header h1 { margin: 0; font-size: 1.25rem; font-weight: 700; }
+    header .sub { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+    .meta-pill {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .toolbar {
+      padding: 14px 28px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: rgba(30, 41, 59, 0.55);
+    }
+    .tabs, .cohorts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    button.tab-btn, button.cohort-btn {
+      background: var(--surface);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 7px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }
+    button.tab-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    button.cohort-btn.active {
+      background: var(--hull-bg);
+      color: var(--hull);
+      border-color: var(--hull);
+    }
+    main { padding: 22px 28px 60px; max-width: 1680px; margin: 0 auto; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+    .card .k { color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .card .v { font-size: 1.5rem; font-weight: 700; margin-top: 4px; }
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid rgba(51, 65, 85, 0.5);
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: var(--surface-alt);
+      color: var(--text);
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    th.hull-col, td.hull-col { background: var(--hull-bg); }
+    .cat-col {
+      min-width: 190px;
+      font-weight: 600;
+      color: #cbd5e1;
+      background: #172033;
+      position: sticky;
+      left: 0;
+      z-index: 1;
+    }
+    .uni-col { min-width: 240px; max-width: 320px; }
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      margin: 2px 3px 2px 0;
+      border: 1px solid var(--border);
+      background: var(--surface-alt);
+      color: #cbd5e1;
+    }
+    .badge.hull { background: rgba(56, 189, 248, 0.2); border-color: var(--hull); color: var(--hull); }
+    .badge.good { background: rgba(34, 197, 94, 0.16); border-color: var(--green); color: #86efac; }
+    .badge.warn { background: rgba(245, 158, 11, 0.16); border-color: var(--amber); color: #fcd34d; }
+    .badge.bad { background: rgba(239, 68, 68, 0.16); border-color: var(--red); color: #fca5a5; }
+    .score {
+      display: inline-block;
+      min-width: 34px;
+      text-align: center;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .score.good { background: rgba(34, 197, 94, 0.2); color: #86efac; }
+    .score.warn { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+    .score.bad { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+    .score.na { background: var(--surface-alt); color: var(--muted); }
+    .quote {
+      display: block;
+      margin-top: 5px;
+      font-size: 0.76rem;
+      color: var(--muted);
+      border-left: 2px solid var(--accent);
+      padding-left: 7px;
+      font-style: italic;
+    }
+    a { color: var(--hull); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .empty {
+      padding: 40px;
+      text-align: center;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+    }
+    .device-toggle { margin-bottom: 14px; display: flex; gap: 8px; align-items: center; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>University of Hull — HE Competitor &amp; Web/SEO Radar</h1>
+      <div class="sub">Pilot: Undergraduate Business Management &middot; Local Preview + Microsoft Fabric Star Schema</div>
+    </div>
+    <div class="meta-pill" id="metaPill">Loading data...</div>
+  </header>
+
+  <div class="toolbar">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="matrix">1. Course Audit Matrix (17 Categories)</button>
+      <button class="tab-btn" data-tab="changes">2. What Changed (Diffs)</button>
+      <button class="tab-btn" data-tab="seo">3. Web, Accessibility &amp; SEO</button>
+      <button class="tab-btn" data-tab="fabric">4. MS Fabric Export</button>
+      <button class="tab-btn" data-tab="usage">5. API Usage &amp; Cost</button>
+    </div>
+    <div class="cohorts" id="cohortFilters">
+      <span style="font-size:0.8rem;color:var(--muted);">Cohort:</span>
+    </div>
+  </div>
+
+  <main>
+    <div class="cards" id="kpiCards"></div>
+
+    <section class="panel active" id="panel-matrix"></section>
+    <section class="panel" id="panel-changes"></section>
+    <section class="panel" id="panel-seo"></section>
+    <section class="panel" id="panel-fabric"></section>
+    <section class="panel" id="panel-usage"></section>
+  </main>
+
+  <script>
+    let DATA = null;
+    let ACTIVE_COHORT = "All";
+    let ACTIVE_DEVICE = "mobile";
+
+    const MATRIX_ROWS = [
+      { label: "Entry Requirements", key: "entry_requirements", quoteKey: "entry_requirements" },
+      { label: "UCAS Tariff Range", fn: (s) => (s.ucas_tariff_min ? `${s.ucas_tariff_min}${s.ucas_tariff_max && s.ucas_tariff_max !== s.ucas_tariff_min ? '–' + s.ucas_tariff_max : ''} pts` : "Not stated / Grades only") },
+      { label: "Tuition Fees — Home (UK)", key: "fees_home", quoteKey: "fees" },
+      { label: "Tuition Fees — International", key: "fees_international" },
+      { label: "TEF Rating", instFn: (i) => i.tef_rating || "—" },
+      { label: "Rankings (University Level)", instFn: (i) => `Times: ${i.times_rank ?? '—'} | Guardian: ${i.guardian_rank ?? '—'} | CUG: ${i.cug_rank ?? '—'}` },
+      { label: "Rankings (Subject Claimed)", key: "subject_ranking_claimed" },
+      { label: "Accreditations", key: "accreditations", quoteKey: "accreditations" },
+      { label: "USPs", key: "usps", quoteKey: "usps" },
+      { label: "Authentic Learning (Placements & Business Links)", key: "authentic_learning", quoteKey: "authentic_learning" },
+      { label: "Employability Outcomes", key: "employability_outcomes", quoteKey: "employability_outcomes" },
+      { label: "International Opportunities", key: "international_opportunities" },
+      { label: "Equipment / Facilities", key: "equipment_facilities" },
+      { label: "Talking Heads (Video)", fn: (s) => `${s.talking_heads_count ?? 0} video(s) — ${s.talking_heads_summary || 'None'}` },
+      { label: "Modules — Year 1", key: "modules_yr1", isModule: true },
+      { label: "Modules — Year 2", key: "modules_yr2", isModule: true },
+      { label: "Modules — Year 3", key: "modules_yr3", isModule: true },
+      { label: "Assessments", key: "assessments" },
+      { label: "Other Programmes / Comments", key: "other_programmes" }
+    ];
+
+    function esc(str) {
+      if (str === null || str === undefined) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function scoreBadge(val) {
+      if (val === null || val === undefined) return `<span class="score na">—</span>`;
+      const cls = val >= 90 ? "good" : val >= 50 ? "warn" : "bad";
+      return `<span class="score ${cls}">${val}</span>`;
+    }
+
+    function filteredCourses() {
+      const instMap = Object.fromEntries(DATA.institutions.map(i => [i.institution_id, i]));
+      return DATA.courses
+        .map(c => ({ ...c, inst: instMap[c.institution_id] }))
+        .filter(c => {
+          if (!c.inst) return false;
+          if (c.inst.is_hull) return true; // Always pin Hull
+          if (ACTIVE_COHORT === "All") return true;
+          return (c.inst.cohorts || []).includes(ACTIVE_COHORT);
+        })
+        .sort((a, b) => (b.inst.is_hull ? 1 : 0) - (a.inst.is_hull ? 1 : 0));
+    }
+
+    function renderKPIs(courses) {
+      const snaps = courses.map(c => DATA.latest_snapshots[c.course_key]).filter(Boolean);
+      const hullCourse = courses.find(c => c.inst.is_hull);
+      const hullSeo = hullCourse ? (DATA.latest_seo[hullCourse.course_key]?.mobile || {}) : {};
+      const avgA11y = (() => {
+        const vals = courses.map(c => DATA.latest_seo[c.course_key]?.mobile?.accessibility_score).filter(v => typeof v === "number");
+        return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : "—";
+      })();
+
+      document.getElementById("kpiCards").innerHTML = `
+        <div class="card"><div class="k">Institutions Shown</div><div class="v">${courses.length}</div></div>
+        <div class="card"><div class="k">Snapshots Captured</div><div class="v">${snaps.length}</div></div>
+        <div class="card"><div class="k">Detected Changes</div><div class="v">${DATA.changes.length}</div></div>
+        <div class="card"><div class="k">Hull Mobile Perf / A11y</div><div class="v">${hullSeo.perf_score ?? '—'} / ${hullSeo.accessibility_score ?? '—'}</div></div>
+        <div class="card"><div class="k">Peer Avg Mobile A11y</div><div class="v">${avgA11y}</div></div>
+      `;
+    }
+
+    function renderMatrix(courses) {
+      const el = document.getElementById("panel-matrix");
+      if (!courses.length) { el.innerHTML = `<div class="empty">No courses found.</div>`; return; }
+
+      const headers = courses.map(c => {
+        const isHull = c.inst.is_hull;
+        const badges = (c.inst.cohorts || []).map(co => `<span class="badge ${isHull ? 'hull' : ''}">${esc(co)}</span>`).join("");
+        return `
+          <th class="uni-col ${isHull ? 'hull-col' : ''}">
+            <div style="font-size:0.95rem;">${esc(c.inst.name)}</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin:2px 0 4px;">
+              <a href="${esc(c.resolved_url || c.url)}" target="_blank">${esc(c.course_title)} ↗</a>
+            </div>
+            <div>${badges}</div>
+          </th>
+        `;
+      }).join("");
+
+      const body = MATRIX_ROWS.map(row => {
+        const cells = courses.map(c => {
+          const snap = DATA.latest_snapshots[c.course_key] || {};
+          const isHull = c.inst.is_hull;
+          let val = "";
+          if (row.instFn) val = row.instFn(c.inst);
+          else if (row.fn) val = row.fn(snap);
+          else val = snap[row.key] || "—";
+
+          let sourceFlagHtml = "";
+          if (row.isModule && snap.module_source === "ucas_fallback") {
+            const ucasLink = snap.evidence && snap.evidence.ucas_fallback_url
+              ? ` <a href="${esc(snap.evidence.ucas_fallback_url)}" target="_blank">UCAS ↗</a>`
+              : "";
+            sourceFlagHtml = `<div style="margin-bottom:4px;"><span class="badge warn">⚠ UCAS Fallback (not on course page)</span>${ucasLink}</div>`;
+          }
+          let quoteHtml = "";
+          if (row.quoteKey && snap.evidence && snap.evidence[row.quoteKey]) {
+            quoteHtml = `<span class="quote">“${esc(snap.evidence[row.quoteKey])}”</span>`;
+          }
+          return `<td class="${isHull ? 'hull-col' : ''}">${sourceFlagHtml}${esc(val)}${quoteHtml}</td>`;
+        }).join("");
+        return `<tr><td class="cat-col">${esc(row.label)}</td>${cells}</tr>`;
+      }).join("");
+
+      el.innerHTML = `<div class="table-wrap"><table><thead><tr><th class="cat-col">Audit Category</th>${headers}</tr></thead><tbody>${body}</tbody></table></div>`;
+    }
+
+    function renderChanges(courses) {
+      const el = document.getElementById("panel-changes");
+      const courseMap = Object.fromEntries(courses.map(c => [c.course_key, c]));
+      const visible = DATA.changes.filter(ch => courseMap[ch.course_key]);
+      if (!visible.length) {
+        el.innerHTML = `<div class="empty">No field-level changes recorded yet for this cohort. Run again after a competitor updates their page, or run with Wayback 12-month backfill enabled.</div>`;
+        return;
+      }
+      const rows = visible.map(ch => {
+        const c = courseMap[ch.course_key];
+        const typeCls = ch.change_type === "added" ? "good" : ch.change_type === "removed" ? "bad" : "warn";
+        return `
+          <tr>
+            <td><strong>${esc(c.inst.name)}</strong><div style="font-size:0.76rem;color:var(--muted);">${esc(ch.detected_date)}</div></td>
+            <td><span class="badge">${esc(ch.comparison_type)}</span></td>
+            <td><code>${esc(ch.field_name)}</code></td>
+            <td><span class="badge ${typeCls}">${esc(ch.change_type)}</span></td>
+            <td style="max-width:340px;color:var(--muted);">${esc(ch.old_value || "—")}</td>
+            <td style="max-width:340px;">${esc(ch.new_value || "—")}</td>
+          </tr>
+        `;
+      }).join("");
+      el.innerHTML = `
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Institution</th><th>Comparison</th><th>Field</th><th>Type</th><th>Previous Value</th><th>Current Value</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderSEO(courses) {
+      const el = document.getElementById("panel-seo");
+      const rows = courses.map(c => {
+        const m = (DATA.latest_seo[c.course_key] || {})[ACTIVE_DEVICE] || {};
+        const isHull = c.inst.is_hull;
+        const lcp = m.lcp_ms ? `${(m.lcp_ms / 1000).toFixed(2)}s` : "—";
+        const schemaBadges = [
+          m.has_course_schema ? `<span class="badge good">Course</span>` : `<span class="badge bad">No Course</span>`,
+          m.has_faq_schema ? `<span class="badge good">FAQ</span>` : "",
+          m.has_video_schema ? `<span class="badge good">Video</span>` : ""
+        ].join("");
+        return `
+          <tr class="${isHull ? 'hull-col' : ''}">
+            <td class="${isHull ? 'hull-col' : ''}"><strong>${esc(c.inst.name)}</strong><div style="font-size:0.75rem;color:var(--muted);">${esc(m.cms_platform || '—')}</div></td>
+            <td>${scoreBadge(m.perf_score)}</td>
+            <td>${scoreBadge(m.accessibility_score)}</td>
+            <td>${scoreBadge(m.best_practices_score)}</td>
+            <td>${scoreBadge(m.seo_score)}</td>
+            <td>${lcp} / CLS: ${m.cls ?? '—'}</td>
+            <td>${schemaBadges}<div style="font-size:0.74rem;color:var(--muted);margin-top:3px;">${esc(m.schema_types || 'None')}</div></td>
+            <td>${esc(m.chat_widget || '—')}</td>
+            <td style="max-width:240px;font-size:0.78rem;">${esc(m.martech_pixels || '—')}</td>
+            <td style="font-size:0.78rem;">H1: ${m.h1_count ?? '—'} | Missing Alt: ${m.missing_alt_count ?? '—'}/${m.total_images ?? '—'}<div style="color:var(--muted);">Title (${m.title_len ?? 0}ch)</div></td>
+          </tr>
+        `;
+      }).join("");
+
+      el.innerHTML = `
+        <div class="device-toggle">
+          <span style="font-size:0.84rem;color:var(--muted);">Lighthouse Device:</span>
+          <button class="cohort-btn ${ACTIVE_DEVICE === 'mobile' ? 'active' : ''}" onclick="setDevice('mobile')">Mobile</button>
+          <button class="cohort-btn ${ACTIVE_DEVICE === 'desktop' ? 'active' : ''}" onclick="setDevice('desktop')">Desktop</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Institution / CMS</th>
+                <th>Perf</th>
+                <th>A11y</th>
+                <th>Best Prac</th>
+                <th>SEO</th>
+                <th>LCP / CLS</th>
+                <th>Schema.org</th>
+                <th>Chat Widget</th>
+                <th>MarTech Pixels</th>
+                <th>On-Page Hygiene</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderFabric() {
+      const el = document.getElementById("panel-fabric");
+      const fx = DATA.fabric_export || {};
+      const tables = fx.tables || [];
+      if (!tables.length) {
+        el.innerHTML = `<div class="empty">No Fabric export metadata yet. Run <code>run_audit.py</code> to generate Parquet star-schema files.</div>`;
+        return;
+      }
+      const rows = tables.map(t => `
+        <tr>
+          <td><code>${esc(t.table)}</code></td>
+          <td>${t.rows}</td>
+          <td>${(t.size_bytes / 1024).toFixed(1)} KB</td>
+          <td style="font-size:0.78rem;color:var(--muted);">${esc(t.file)}</td>
+        </tr>
+      `).join("");
+      el.innerHTML = `
+        <div class="card" style="margin-bottom:16px;">
+          <div class="k">Microsoft Fabric Lakehouse Sync</div>
+          <p style="margin:8px 0 0;font-size:0.88rem;color:var(--muted);">
+            Exported as <strong>${esc((fx.format || 'parquet').toUpperCase())}</strong> to <code>${esc(fx.export_dir)}</code> at ${esc(fx.exported_at)}.
+            Point <strong>OneLake File Explorer</strong> at this folder (or set <code>FABRIC_EXPORT_DIR</code> in <code>.env</code>) to sync directly into your Fabric Lakehouse <code>Files/</code> directory and load into Delta tables for Power BI Direct Lake.
+          </p>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Star-Schema Table</th><th>Rows</th><th>Size</th><th>File Path</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderUsage() {
+      const el = document.getElementById("panel-usage");
+      const u = DATA.api_usage || {};
+      const calls = u.recent_calls || [];
+      const psiPct = Math.min(100, ((u.pagespeed_calls_today || 0) / (u.pagespeed_daily_quota || 25000)) * 100).toFixed(2);
+
+      const rows = calls.map(c => {
+        const stCls = (c.status || "").startsWith("ok") || c.status === "cache_hit" ? "good" : (c.status === "rate_limited" ? "warn" : "bad");
+        return `
+          <tr>
+            <td style="font-size:0.78rem;color:var(--muted);">${esc(c.called_at)}</td>
+            <td><span class="badge">${esc(c.provider)}</span></td>
+            <td><code>${esc(c.model_or_endpoint || '—')}</code></td>
+            <td>${esc(c.course_key || '—')}</td>
+            <td><span class="badge ${stCls}">${esc(c.status)}</span></td>
+            <td>${(c.input_tokens || 0).toLocaleString()} / ${(c.output_tokens || 0).toLocaleString()}</td>
+            <td>$${Number(c.estimated_cost_usd || 0).toFixed(5)}</td>
+            <td>${c.latency_ms ? (c.latency_ms / 1000).toFixed(2) + 's' : '—'}</td>
+          </tr>
+        `;
+      }).join("");
+
+      el.innerHTML = `
+        <div class="cards">
+          <div class="card">
+            <div class="k">Gemini API Calls (Total / Today)</div>
+            <div class="v">${u.gemini_total_calls ?? 0} <span style="font-size:0.9rem;color:var(--muted);">/ ${u.gemini_calls_today ?? 0} today</span></div>
+          </div>
+          <div class="card">
+            <div class="k">Hash-Cache Hits Saved</div>
+            <div class="v" style="color:var(--green);">${u.gemini_cache_hits ?? 0}</div>
+          </div>
+          <div class="card">
+            <div class="k">Gemini Tokens (In / Out)</div>
+            <div class="v" style="font-size:1.15rem;">${(u.gemini_input_tokens || 0).toLocaleString()} / ${(u.gemini_output_tokens || 0).toLocaleString()}</div>
+          </div>
+          <div class="card">
+            <div class="k">Est. Gemini Cost</div>
+            <div class="v" style="color:var(--hull);">£${Number(u.estimated_cost_gbp || 0).toFixed(4)} <span style="font-size:0.85rem;color:var(--muted);">($${Number(u.estimated_cost_usd || 0).toFixed(4)})</span></div>
+          </div>
+          <div class="card">
+            <div class="k">PageSpeed Calls Today</div>
+            <div class="v">${u.pagespeed_calls_today ?? 0} <span style="font-size:0.85rem;color:var(--muted);">/ ${(u.pagespeed_daily_quota || 25000).toLocaleString()} (${psiPct}%)</span></div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp (UTC)</th>
+                <th>Provider</th>
+                <th>Model / Endpoint</th>
+                <th>Course</th>
+                <th>Status</th>
+                <th>Tokens (In / Out)</th>
+                <th>Est. Cost (USD)</th>
+                <th>Latency</th>
+              </tr>
+            </thead>
+            <tbody>${rows || '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px;">No API calls logged yet.</td></tr>'}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function setDevice(dev) {
+      ACTIVE_DEVICE = dev;
+      renderAll();
+    }
+
+    function renderAll() {
+      const courses = filteredCourses();
+      renderKPIs(courses);
+      renderMatrix(courses);
+      renderChanges(courses);
+      renderSEO(courses);
+      renderFabric();
+      renderUsage();
+    }
+
+    async function init() {
+      try {
+        const resp = await fetch("data.json?t=" + Date.now());
+        if (!resp.ok) throw new Error("Run run_audit.py first to generate dashboard/data.json");
+        DATA = await resp.json();
+      } catch (err) {
+        document.getElementById("metaPill").textContent = "No data loaded";
+        document.getElementById("panel-matrix").innerHTML = `<div class="empty">${esc(err.message)}</div>`;
+        return;
+      }
+
+      document.getElementById("metaPill").textContent = `Updated: ${DATA.generated_at}`;
+
+      // Build cohort filter buttons
+      const allCohorts = new Set(["All"]);
+      DATA.institutions.forEach(i => (i.cohorts || []).forEach(c => { if (c !== "Baseline") allCohorts.add(c); }));
+      const container = document.getElementById("cohortFilters");
+      [...allCohorts].forEach(c => {
+        const btn = document.createElement("button");
+        btn.className = "cohort-btn" + (c === ACTIVE_COHORT ? " active" : "");
+        btn.textContent = c;
+        btn.onclick = () => {
+          ACTIVE_COHORT = c;
+          container.querySelectorAll("button").forEach(b => b.classList.toggle("active", b.textContent === c));
+          renderAll();
+        };
+        container.appendChild(btn);
+      });
+
+      // Tab switching
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.onclick = () => {
+          document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+          document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+          btn.classList.add("active");
+          document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+        };
+      });
+
+      renderAll();
+    }
+
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+hull_intel.db
+exports/
+cache/
+tunnel_url.txt
+dashboard/data.json
