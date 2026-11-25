@@ -195,6 +195,7 @@
       <button class="tab-btn" data-tab="seo">3. Web, Accessibility &amp; SEO</button>
       <button class="tab-btn" data-tab="fabric">4. MS Fabric Export</button>
       <button class="tab-btn" data-tab="usage">5. API Usage &amp; Cost</button>
+      <button class="tab-btn" data-tab="intl">6. Intl Markets (Layer 2)</button>
     </div>
     <div class="cohorts" id="cohortFilters">
       <span style="font-size:0.8rem;color:var(--muted);">Cohort:</span>
@@ -209,12 +210,14 @@
     <section class="panel" id="panel-seo"></section>
     <section class="panel" id="panel-fabric"></section>
     <section class="panel" id="panel-usage"></section>
+    <section class="panel" id="panel-intl"></section>
   </main>
 
   <script>
     let DATA = null;
     let ACTIVE_COHORT = "All";
     let ACTIVE_DEVICE = "mobile";
+    let ACTIVE_COUNTRY = "India";
 
     const MATRIX_ROWS = [
       { label: "Entry Requirements (Home / UK)", key: "entry_requirements", quoteKey: "entry_requirements" },
@@ -521,6 +524,83 @@
       `;
     }
 
+    function setCountry(country) {
+      ACTIVE_COUNTRY = country;
+      renderIntl();
+    }
+
+    function renderIntl() {
+      const el = document.getElementById("panel-intl");
+      const allReqs = DATA.latest_intl_reqs || [];
+      if (!allReqs.length) {
+        el.innerHTML = `<div class="empty">No Layer 2 country equivalencies loaded yet. Run <code>.\\run.ps1 --intl-countries</code> to populate India, Nigeria, China, Pakistan, Ghana &amp; Bangladesh.</div>`;
+        return;
+      }
+
+      const countries = ["India", "Nigeria", "China", "Pakistan", "Ghana", "Bangladesh"];
+      const instMap = Object.fromEntries(DATA.institutions.map(i => [i.institution_id, i]));
+      const visibleInsts = DATA.institutions
+        .filter(i => i.is_hull || ACTIVE_COHORT === "All" || (i.cohorts || []).includes(ACTIVE_COHORT))
+        .sort((a, b) => (b.is_hull ? 1 : 0) - (a.is_hull ? 1 : 0));
+
+      const reqMap = Object.fromEntries(
+        allReqs.filter(r => r.country === ACTIVE_COUNTRY).map(r => [r.institution_id, r])
+      );
+
+      const pills = countries.map(c =>
+        `<button class="cohort-btn ${c === ACTIVE_COUNTRY ? 'active' : ''}" onclick="setCountry('${c}')">${esc(c)}</button>`
+      ).join("");
+
+      const rows = visibleInsts.map(inst => {
+        const r = reqMap[inst.institution_id];
+        const isHull = inst.is_hull;
+        if (!r) {
+          return `<tr class="${isHull ? 'hull-col' : ''}"><td><strong>${esc(inst.name)}</strong></td><td colspan="6" style="color:var(--muted);">Not yet captured for ${esc(ACTIVE_COUNTRY)}</td></tr>`;
+        }
+        const deCls = r.direct_entry_ug === "Yes" ? "good" : (r.direct_entry_ug === "Foundation Required" ? "bad" : "warn");
+        const ewCls = r.english_waiver_accepted === "Yes" ? "good" : (r.english_waiver_accepted === "No" ? "bad" : "na");
+        const pctHtml = r.normalised_pct_min ? `<strong>${r.normalised_pct_min}%</strong>` : "—";
+        const quoteHtml = r.evidence_quote ? `<span class="quote">“${esc(r.evidence_quote)}”</span>` : "";
+        return `
+          <tr class="${isHull ? 'hull-col' : ''}">
+            <td class="${isHull ? 'hull-col' : ''}">
+              <strong>${esc(inst.name)}</strong>
+              <div style="font-size:0.75rem;margin-top:2px;"><a href="${esc(r.source_url)}" target="_blank">Country Page ↗</a></div>
+            </td>
+            <td><span class="badge ${deCls}">${esc(r.direct_entry_ug || '—')}</span></td>
+            <td>${pctHtml}</td>
+            <td style="min-width:170px;">${esc(r.primary_qualification || '—')}</td>
+            <td style="min-width:240px;">${esc(r.required_score_summary || '—')}${quoteHtml}</td>
+            <td><span class="badge ${ewCls}">${esc(r.english_waiver_accepted || '—')}</span><div style="font-size:0.76rem;color:var(--muted);margin-top:3px;">${esc(r.english_waiver_details || '')}</div></td>
+            <td style="min-width:200px;font-size:0.8rem;">${esc(r.foundation_or_pathway_notes || '—')}</td>
+          </tr>
+        `;
+      }).join("");
+
+      el.innerHTML = `
+        <div class="device-toggle" style="flex-wrap:wrap;">
+          <span style="font-size:0.84rem;color:var(--muted);">Priority Market:</span>
+          ${pills}
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Institution</th>
+                <th>UG Direct Entry?</th>
+                <th>Min %</th>
+                <th>Primary Qualification</th>
+                <th>Normalised UG Requirement</th>
+                <th>English Waiver?</th>
+                <th>Foundation / Pathway Route</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
     function setDevice(dev) {
       ACTIVE_DEVICE = dev;
       renderAll();
@@ -534,6 +614,7 @@
       renderSEO(courses);
       renderFabric();
       renderUsage();
+      renderIntl();
     }
 
     async function init() {

@@ -164,6 +164,120 @@ def cmd_serve(port: int = 8765) -> None:
         httpd.serve_forever()
 
 
+def _slice_country_section(full_text: str, country: str) -> str:
+    """For single-page country hubs (e.g. York St John), slice text around the country heading."""
+    idx = full_text.lower().find(country.lower())
+    if idx < 0:
+        return full_text[:35000]
+    start = max(0, idx - 400)
+    return full_text[start : start + 14000]
+
+
+def run_intl_countries_audit(config: dict[str, Any], args: argparse.Namespace) -> None:
+    """Layer 2: Harvest & normalise UG entry requirements for Hull's priority international markets."""
+    countries = config.get("priority_intl_markets") or ["India", "Nigeria", "China", "Pakistan", "Ghana", "Bangladesh"]
+    only_set = {x.strip().lower() for x in args.only.split(",") if x.strip()}
+    hub_cache: dict[str, dict[str, Any]] = {}
+
+    print(f"\n=== Layer 2 International Markets Audit ({', '.join(countries)}) ===")
+    for inst in config["institutions"]:
+        inst_id = inst["institution_id"]
+        if only_set and inst_id.lower() not in only_set:
+            continue
+        tpl = (inst.get("intl_country_url_template") or "").strip()
+        if not tpl:
+            print(f"  [SKIP] {inst['name']} — no intl_country_url_template configured.")
+            continue
+
+        is_single_hub = "{country}" not in tpl
+        for country in countries:
+            slug = country.lower().replace(" ", "-")
+            url = tpl if is_single_hub else tpl.replace("{country}", slug)
+            print(f"\n>>> [{inst['name']} × {country}] {url}")
+
+            # Reuse hub fetch if this university puts all countries on one page
+            if is_single_hub and url in hub_cache:
+                raw_harvest = hub_cache[url]
+            else:
+                # Lightweight HTTP fetch first with 24h local cache; fallback to Playwright if thin
+                cached = None if args.force_refresh else harvester._load_fresh_cache(url, 24.0)
+                if cached:
+                    raw_harvest = cached
+                else:
+                    try:
+                        raw_harvest = harvester.harvest_page_requests(url, timeout=20)
+                        raw_harvest["waf_blocked"] = harvester.is_waf_or_block_page(
+                            raw_harvest["clean_text"], raw_harvest["seo"].get("title_tag", ""), raw_harvest["word_count"]
+                        )
+                        if not raw_harvest["waf_blocked"] and raw_harvest["http_status"] == 200 and raw_harvest["word_count"] >= 120:
+                            harvester._save_cache(url, raw_harvest)
+                        elif raw_harvest["http_status"] == 200 and raw_harvest["word_count"] < 120 and not raw_harvest["waf_blocked"]:
+                            raw_harvest = harvester.harvest_page_playwright(url, force_refresh=args.force_refresh)
+                    except Exception as exc:
+                        print(f"    [ERROR] {exc}")
+                        continue
+                    time.sleep(1.2)
+                if is_single_hub:
+                    hub_cache[url] = raw_harvest
+
+            if raw_harvest.get("waf_blocked") or raw_harvest.get("http_status", 0) >= 400:
+                print(f"    [SKIP/BLOCKED] HTTP {raw_harvest.get('http_status')} (waf_blocked={raw_harvest.get('waf_blocked')})")
+                continue
+
+            page_text = _slice_country_section(raw_harvest["clean_text"], country) if is_single_hub else raw_harvest["clean_text"]
+            content_hash = harvester.compute_content_hash(f"{country}::{page_text}")
+
+            if not args.force_llm:
+                cached_req = storage.get_cached_intl_req_by_hash(inst_id, country, content_hash)
+                if cached_req:
+                    print(f"    [LLM cache hit] Unchanged ({content_hash[:10]}) — skipping Gemini call.")
+                    storage.log_api_usage("gemini", f"{cached_req.get('llm_model', 'cache')} (intl-l2)", f"{inst_id}-{slug}", "cache_hit")
+                    continue
+
+            print(f"    [Gemini L2] Normalising {country} UG requirements ({len(page_text.split())} words)...")
+            try:
+                res = extractor.extract_intl_country_req_gemini(inst["name"], country, page_text)
+            except Exception as exc:
+                print(f"    [LLM ERROR] {exc}")
+                continue
+
+            usage = res.get("_usage") or {}
+            if usage:
+                storage.log_api_usage(
+                    provider="gemini",
+                    model_or_endpoint=f"{usage.get('model', '')} (intl-l2)",
+                    course_key=f"{inst_id}-{slug}",
+                    status="ok",
+                    input_tokens=usage.get("input_tokens", 0),
+                    output_tokens=usage.get("output_tokens", 0),
+                    total_tokens=usage.get("total_tokens", 0),
+                    estimated_cost_usd=usage.get("estimated_cost_usd", 0.0),
+                    latency_ms=usage.get("latency_ms", 0),
+                )
+
+            rec = {
+                "snapshot_date": storage.utc_now_iso(),
+                "institution_id": inst_id,
+                "country": country,
+                "source_url": raw_harvest.get("resolved_url", url),
+                "content_hash": content_hash,
+                "primary_qualification": res.get("primary_qualification"),
+                "direct_entry_ug": res.get("direct_entry_ug"),
+                "required_score_summary": res.get("required_score_summary"),
+                "normalised_pct_min": res.get("normalised_pct_min"),
+                "english_waiver_accepted": res.get("english_waiver_accepted"),
+                "english_waiver_details": res.get("english_waiver_details"),
+                "foundation_or_pathway_notes": res.get("foundation_or_pathway_notes"),
+                "evidence_quote": res.get("evidence_quote"),
+                "llm_model": res.get("llm_model", ""),
+            }
+            storage.save_intl_country_req(rec)
+            print(
+                f"      ↳ Direct Entry: {rec['direct_entry_ug']} | Min%: {rec['normalised_pct_min']} | "
+                f"Eng Waiver: {rec['english_waiver_accepted']} | Qual: {str(rec['primary_qualification'])[:45]}"
+            )
+
+
 def main() -> None:
     load_dotenv_simple(BASE_DIR / ".env")
 
@@ -177,6 +291,7 @@ def main() -> None:
     parser.add_argument("--skip-seo", action="store_true", help="Skip Google PageSpeed Insights API calls")
     parser.add_argument("--skip-wayback", action="store_true", help="Skip Wayback Machine 12-month baseline fetch")
     parser.add_argument("--force-refresh", action="store_true", help="Bypass the 24h local HTML cache and re-fetch live pages")
+    parser.add_argument("--intl-countries", action="store_true", help="Run Layer 2 priority international country equivalencies audit")
     parser.add_argument("--export-only", action="store_true", help="Regenerate Fabric Parquet exports & dashboard JSON only")
     parser.add_argument("--serve", action="store_true", help="Serve the local HTML dashboard after running")
     parser.add_argument("--port", type=int, default=8765, help="Port for --serve (default 8765)")
@@ -191,6 +306,19 @@ def main() -> None:
     storage.init_db()
     storage.backfill_usage_if_empty()
     storage.sync_config_to_db(config)
+
+    if args.intl_countries:
+        run_intl_countries_audit(config, args)
+        print("\n=== Exporting MS Fabric Star Schema & Local Dashboard ===")
+        fabric_summary = storage.export_fabric_star_schema()
+        print(f"  Format: {fabric_summary['format'].upper()} → {fabric_summary['export_dir']}")
+        for t in fabric_summary["tables"]:
+            print(f"    - {t['table']:28} | {t['rows']:4} rows | {t['size_bytes']:,} bytes")
+        dash_json = storage.export_dashboard_json(fabric_summary=fabric_summary)
+        print(f"  Dashboard data updated: {dash_json}")
+        if args.serve:
+            cmd_serve(args.port)
+        return
 
     if not args.export_only:
         inst_map = {i["institution_id"]: i for i in config["institutions"]}

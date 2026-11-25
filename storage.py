@@ -218,6 +218,28 @@ def init_db(db_path: Path = DB_PATH) -> None:
 
             CREATE INDEX IF NOT EXISTS idx_api_usage_date
                 ON fact_api_usage (called_at DESC);
+
+            CREATE TABLE IF NOT EXISTS fact_intl_country_reqs (
+                req_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                snapshot_date TEXT NOT NULL,
+                institution_id TEXT NOT NULL,
+                country TEXT NOT NULL,
+                source_url TEXT NOT NULL,
+                content_hash TEXT NOT NULL,
+                primary_qualification TEXT,
+                direct_entry_ug TEXT,
+                required_score_summary TEXT,
+                normalised_pct_min INTEGER,
+                english_waiver_accepted TEXT,
+                english_waiver_details TEXT,
+                foundation_or_pathway_notes TEXT,
+                evidence_quote TEXT,
+                llm_model TEXT,
+                FOREIGN KEY (institution_id) REFERENCES dim_institutions(institution_id)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_intl_reqs_inst_country
+                ON fact_intl_country_reqs (institution_id, country, snapshot_date DESC);
             """
         )
         # Lightweight schema migration for existing SQLite databases
@@ -577,6 +599,50 @@ def backfill_usage_if_empty(db_path: Path = DB_PATH) -> None:
         conn.close()
 
 
+def get_cached_intl_req_by_hash(
+    institution_id: str, country: str, content_hash: str, db_path: Path = DB_PATH
+) -> dict[str, Any] | None:
+    conn = get_conn(db_path)
+    try:
+        row = conn.execute(
+            """
+            SELECT * FROM fact_intl_country_reqs
+            WHERE institution_id = ? AND country = ? AND content_hash = ?
+              AND llm_model IS NOT NULL AND llm_model != ''
+            ORDER BY req_id DESC LIMIT 1
+            """,
+            (institution_id, country, content_hash),
+        ).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def save_intl_country_req(rec: dict[str, Any], db_path: Path = DB_PATH) -> int:
+    conn = get_conn(db_path)
+    try:
+        cur = conn.execute(
+            """
+            INSERT INTO fact_intl_country_reqs (
+                snapshot_date, institution_id, country, source_url, content_hash,
+                primary_qualification, direct_entry_ug, required_score_summary,
+                normalised_pct_min, english_waiver_accepted, english_waiver_details,
+                foundation_or_pathway_notes, evidence_quote, llm_model
+            ) VALUES (
+                :snapshot_date, :institution_id, :country, :source_url, :content_hash,
+                :primary_qualification, :direct_entry_ug, :required_score_summary,
+                :normalised_pct_min, :english_waiver_accepted, :english_waiver_details,
+                :foundation_or_pathway_notes, :evidence_quote, :llm_model
+            )
+            """,
+            rec,
+        )
+        conn.commit()
+        return int(cur.lastrowid)
+    finally:
+        conn.close()
+
+
 def save_web_seo_metric(metric: dict[str, Any], db_path: Path = DB_PATH) -> None:
     conn = get_conn(db_path)
     try:
@@ -627,6 +693,7 @@ def export_fabric_star_schema(
         "fact_course_snapshots",
         "fact_course_changes",
         "fact_web_seo_metrics",
+        "fact_intl_country_reqs",
         "fact_api_usage",
     ]
 
@@ -786,6 +853,22 @@ def export_dashboard_json(
             "recent_calls": usage_rows[:60],
         }
 
+        # Latest Layer 2 international country equivalencies (institution x country)
+        intl_rows = [
+            dict(r)
+            for r in conn.execute(
+                """
+                SELECT r.* FROM fact_intl_country_reqs r
+                INNER JOIN (
+                    SELECT institution_id, country, MAX(req_id) AS max_id
+                    FROM fact_intl_country_reqs
+                    GROUP BY institution_id, country
+                ) m ON r.req_id = m.max_id
+                ORDER BY r.country, r.institution_id
+                """
+            ).fetchall()
+        ]
+
         payload = {
             "generated_at": utc_now_iso(),
             "institutions": institutions,
@@ -793,6 +876,7 @@ def export_dashboard_json(
             "latest_snapshots": latest_snapshots,
             "changes": changes,
             "latest_seo": latest_seo,
+            "latest_intl_reqs": intl_rows,
             "fabric_export": fabric_summary or {},
             "api_usage": api_usage_summary,
         }

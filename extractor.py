@@ -297,3 +297,99 @@ def extract_ucas_modules_grounded_gemini(
 
     return {"modules_yr1": "Not stated on page", "modules_yr2": "Not stated on page", "modules_yr3": "Not stated on page", "assessments": "Not stated on page"}
 
+
+INTL_COUNTRY_PROMPT = """You are a UK Higher Education international recruitment analyst working for the University of Hull.
+Extract normalised UNDERGRADUATE (Bachelor's) entry requirements for the specified country from this university webpage text.
+
+STRICT RULES:
+1. Focus ONLY on UNDERGRADUATE (Year 1 / Direct Entry / Foundation) requirements — ignore Postgraduate/Masters unless needed to clarify a 2-year degree route into UG.
+2. NEVER guess or use outside knowledge. If not stated on the page, return "Not stated".
+3. Normalise `direct_entry_ug` strictly to one of: "Yes", "Conditional", "Foundation Required", "Not stated".
+   - Use "Yes" if standard national school-leaving certificate (e.g. CBSE/ISC Class XII, Gaokao) grants direct Year 1 entry.
+   - Use "Foundation Required" if school-leaving certificate (e.g. WAEC/WASSCE/HSC/HSSC) requires an International Foundation Year or 1 year of university study for Year 1 entry.
+   - Use "Conditional" if direct entry is allowed only for specific boards/high grades or with an extra year/diploma.
+4. Normalise `normalised_pct_min` to a plain integer (e.g. 65, 70, 75) if a minimum overall percentage is stated for standard UG entry (e.g. 65% in CBSE Class XII or 75% in Gaokao), else null.
+5. Normalise `english_waiver_accepted` strictly to one of: "Yes", "No", "Not stated" (e.g. "Yes" if CBSE/ISC English 70%+, WAEC/WASSCE C6, or Medium of Instruction waives IELTS).
+
+Return a single valid JSON object with EXACTLY these keys:
+{
+  "primary_qualification": "string (e.g. 'CBSE / ISC / State Board Standard XII' or 'WAEC / NECO Senior School Certificate')",
+  "direct_entry_ug": "Yes | Conditional | Foundation Required | Not stated",
+  "required_score_summary": "concise 1-2 sentence summary of UG academic grade/percentage requirements",
+  "normalised_pct_min": integer or null,
+  "english_waiver_accepted": "Yes | No | Not stated",
+  "english_waiver_details": "string (e.g. 'CBSE/CISCE Standard XII English 70%+' or 'WAEC/WASSCE English Grade C6' or 'Not stated')",
+  "foundation_or_pathway_notes": "string (foundation year / pathway college / 1-yr university study route, or 'Not stated')",
+  "evidence_quote": "short verbatim quote (max 25 words) from the page supporting the UG entry requirement"
+}
+"""
+
+
+def extract_intl_country_req_gemini(
+    institution_name: str,
+    country: str,
+    clean_text: str,
+    model: str | None = None,
+) -> dict[str, Any]:
+    """Hash-gated Gemini extractor for normalised Layer 2 country entry requirements."""
+    api_key = os.getenv("GEMINI_API_KEY", "").strip()
+    if not api_key or api_key == "your_gemini_api_key_here":
+        return {"primary_qualification": "GEMINI_API_KEY not configured", "direct_entry_ug": "Not stated", "llm_model": ""}
+
+    chosen_model = (model or os.getenv("GEMINI_MODEL", DEFAULT_GEMINI_MODEL)).strip()
+    candidate_models = [chosen_model] + [m for m in FALLBACK_MODELS if m != chosen_model]
+
+    user_prompt = (
+        f"Institution: {institution_name}\n"
+        f"Target Country: {country}\n\n"
+        f"--- WEBPAGE TEXT START ---\n{clean_text[:60000]}\n--- WEBPAGE TEXT END ---"
+    )
+    payload = {
+        "system_instruction": {"parts": [{"text": INTL_COUNTRY_PROMPT}]},
+        "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
+        "generationConfig": {"temperature": 0.1, "responseMimeType": "application/json"},
+    }
+
+    last_err = ""
+    for m in candidate_models:
+        endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{m}:generateContent?key={api_key}"
+        t0 = time.monotonic()
+        try:
+            resp = requests.post(endpoint, json=payload, timeout=45)
+        except Exception as exc:
+            last_err = f"{m}: {exc}"
+            continue
+        latency_ms = int((time.monotonic() - t0) * 1000)
+        if resp.status_code in (404, 429, 500, 503):
+            last_err = f"{m} HTTP {resp.status_code}"
+            time.sleep(1.0)
+            continue
+        if resp.status_code != 200:
+            raise RuntimeError(f"Gemini API HTTP {resp.status_code}: {resp.text[:250]}")
+
+        data = resp.json()
+        try:
+            raw_text = data["candidates"][0]["content"]["parts"][0]["text"]
+            parsed = json.loads(raw_text)
+        except Exception as exc:
+            last_err = f"{m} parse error: {exc}"
+            continue
+
+        usage_meta = data.get("usageMetadata") or {}
+        in_tok = int(usage_meta.get("promptTokenCount") or 0)
+        out_tok = int(usage_meta.get("candidatesTokenCount") or 0)
+        est_cost = round((in_tok / 1_000_000) * 0.15 + (out_tok / 1_000_000) * 0.60, 6)
+        parsed["llm_model"] = m
+        parsed["_usage"] = {
+            "model": m,
+            "input_tokens": in_tok,
+            "output_tokens": out_tok,
+            "total_tokens": in_tok + out_tok,
+            "estimated_cost_usd": est_cost,
+            "latency_ms": latency_ms,
+        }
+        return parsed
+
+    raise RuntimeError(f"All Gemini models failed for {institution_name}/{country} ({last_err})")
+
+

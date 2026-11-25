@@ -91,3 +91,35 @@ usage_id,called_at,provider,model_or_endpoint,course_key,status,input_tokens,out
 90,2026-11-25T14:55:38Z,gemini,gemini-3.6-flash,sheffield-hallam-bm-ug,ok,16773,1238,19548,0.003259,13406
 91,2026-11-25T14:56:19Z,gemini,gemini-3.6-flash,york-bm-ug,ok,6314,956,9769,0.001521,15993
 92,2026-11-25T14:57:03Z,gemini,gemini-3.6-flash,leeds-bm-ug,ok,7601,1348,11295,0.001949,28331
+93,2026-11-25T16:35:34Z,gemini,gemini-3.5-flash (intl-l2),hull-india,ok,865,107,972,0.000194,7759
+94,2026-11-25T16:37:06Z,gemini,gemini-3.5-flash (intl-l2),hull-nigeria,ok,1573,126,1699,0.000312,31473
+95,2026-11-25T16:37:32Z,gemini,gemini-3.6-flash (intl-l2),hull-china,ok,865,107,972,0.000194,21792
+96,2026-11-25T16:38:13Z,gemini,gemini-3.6-flash (intl-l2),hull-pakistan,ok,1494,107,1601,0.000288,27972
+97,2026-11-25T16:38:23Z,gemini,gemini-3.6-flash (intl-l2),hull-ghana,ok,865,127,992,0.000206,6615
+98,2026-11-25T16:38:32Z,gemini,gemini-3.6-flash (intl-l2),hull-bangladesh,ok,865,107,972,0.000194,4380
+99,2026-11-25T16:38:51Z,gemini,gemini-3.6-flash (intl-l2),leeds-beckett-india,ok,1573,107,1680,0.0003,14330
+100,2026-11-25T16:39:01Z,gemini,gemini-3.6-flash (intl-l2),leeds-beckett-nigeria,ok,1295,107,1402,0.000258,2607
+101,2026-11-25T16:39:13Z,gemini,gemini-3.6-flash (intl-l2),leeds-beckett-china,ok,1336,107,1443,0.000265,7440
+102,2026-11-25T16:40:01Z,gemini,gemini-3.6-flash (intl-l2),leeds-beckett-pakistan,ok,1647,107,1754,0.000311,43168
+103,2026-11-25T16:40:53Z,gemini,gemini-3.5-flash-lite (intl-l2),leeds-beckett-ghana,ok,1279,107,1386,0.000256,1041
+104,2026-11-25T16:41:01Z,gemini,gemini-3.6-flash (intl-l2),leeds-beckett-bangladesh,ok,1647,107,1754,0.000311,2826
+105,2026-11-25T16:41:52Z,gemini,gemini-3.5-flash-lite (intl-l2),york-st-john-india,ok,1215,107,1322,0.000246,996
+106,2026-11-25T16:42:01Z,gemini,gemini-flash-lite-latest (intl-l2),york-st-john-nigeria,ok,1092,107,1199,0.000228,1321
+107,2026-11-25T16:42:50Z,gemini,gemini-3.5-flash-lite (intl-l2),york-st-john-china,ok,1331,107,1438,0.000264,752
+108,2026-11-25T16:43:39Z,gemini,gemini-3.5-flash-lite (intl-l2),york-st-john-pakistan,ok,1081,107,1188,0.000226,778
+109,2026-11-25T16:43:53Z,gemini,gemini-3.5-flash-lite (intl-l2),york-st-john-bangladesh,ok,1376,107,1483,0.000271,1566
+110,2026-11-25T16:44:10Z,gemini,gemini-3.5-flash-lite (intl-l2),lincoln-nigeria,ok,1858,206,2064,0.000402,1406
+111,2026-11-25T16:44:20Z,gemini,gemini-flash-lite-latest (intl-l2),lincoln-china,ok,1945,193,2138,0.000408,1583
+112,2026-11-25T16:44:29Z,gemini,gemini-flash-lite-latest (intl-l2),lincoln-pakistan,ok,1756,190,1946,0.000377,1230
+113,2026-11-25T16:45:08Z,gemini,gemini-3.6-flash (intl-l2),lincoln-ghana,ok,1806,197,2003,0.000389,35445
+114,2026-11-25T16:45:17Z,gemini,gemini-flash-lite-latest (intl-l2),lincoln-bangladesh,ok,1767,164,1931,0.000363,971
+115,2026-11-25T16:46:11Z,gemini,gemini-flash-lite-latest (intl-l2),sheffield-hallam-pakistan,ok,941,184,1125,0.000252,1090
+116,2026-11-25T16:46:20Z,gemini,gemini-flash-lite-latest (intl-l2),sheffield-hallam-ghana,ok,1145,190,1335,0.000286,1064
+117,2026-11-25T16:46:27Z,gemini,gemini-3.5-flash-lite (intl-l2),sheffield-hallam-bangladesh,ok,915,180,1095,0.000245,902
+118,2026-11-25T16:46:37Z,gemini,gemini-flash-lite-latest (intl-l2),york-india,ok,3641,260,3901,0.000702,1159
+119,2026-11-25T16:46:53Z,gemini,gemini-3.5-flash-lite (intl-l2),york-china,ok,3691,184,3875,0.000664,1161
+120,2026-11-25T16:47:59Z,gemini,gemini-flash-lite-latest (intl-l2),leeds-india,ok,930,107,1037,0.000204,797
+121,2026-11-25T16:48:18Z,gemini,gemini-3.5-flash-lite (intl-l2),leeds-nigeria,ok,930,107,1037,0.000204,4000
+122,2026-11-25T16:48:35Z,gemini,gemini-3.5-flash-lite (intl-l2),leeds-china,ok,930,107,1037,0.000204,977
+123,2026-11-25T16:48:51Z,gemini,gemini-3.5-flash-lite (intl-l2),leeds-pakistan,ok,930,107,1037,0.000204,800
+124,2026-11-25T16:49:33Z,gemini,gemini-3.5-flash-lite (intl-l2),leeds-ghana,ok,930,107,1037,0.000204,27344

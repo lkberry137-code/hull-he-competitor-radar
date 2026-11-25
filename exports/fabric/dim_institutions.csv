@@ -1,8 +1,8 @@
 institution_id,name,is_hull,tef_rating,times_rank,guardian_rank,cug_rank,subject_rank_times,subject_rank_guardian,subject_rank_cug,cms_platform,updated_at
-hull,University of Hull,1,Gold,64,74,54,57,58,52,Contensis,2026-11-25T14:52:11Z
-leeds-beckett,Leeds Beckett University,0,Silver,116,103,110,,,,Squiz Matrix / Funnelback,2026-11-25T14:52:11Z
-york-st-john,York St John University,0,Silver,100,80,96,,,,Squiz Matrix / Funnelback,2026-11-25T14:52:11Z
-lincoln,University of Lincoln,0,Gold,59,66,62,,,,Drupal,2026-11-25T14:52:11Z
-sheffield-hallam,Sheffield Hallam University,0,Gold,87,76,79,,,,Sitecore,2026-11-25T14:52:11Z
-york,University of York,0,Gold,17,19,17,,,,WordPress,2026-11-25T14:52:11Z
-leeds,University of Leeds,0,Silver,23,28,22,,,,Unknown,2026-11-25T14:52:11Z
+hull,University of Hull,1,Gold,64,74,54,57,58,52,Contensis,2026-11-25T16:34:37Z
+leeds-beckett,Leeds Beckett University,0,Silver,116,103,110,,,,Squiz Matrix / Funnelback,2026-11-25T16:34:37Z
+york-st-john,York St John University,0,Silver,100,80,96,,,,Squiz Matrix / Funnelback,2026-11-25T16:34:37Z
+lincoln,University of Lincoln,0,Gold,59,66,62,,,,Drupal,2026-11-25T16:34:37Z
+sheffield-hallam,Sheffield Hallam University,0,Gold,87,76,79,,,,Sitecore,2026-11-25T16:34:37Z
+york,University of York,0,Gold,17,19,17,,,,WordPress,2026-11-25T16:34:37Z
+leeds,University of Leeds,0,Silver,23,28,22,,,,Unknown,2026-11-25T16:34:37Z
