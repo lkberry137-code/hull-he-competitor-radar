@@ -32,13 +32,26 @@ STRICT RULES:
 3. Keep each field concise, clear, and comparable across universities (suitable for an executive table and Power BI dashboard).
 4. For `ucas_tariff_min` and `ucas_tariff_max`, return integers if UCAS tariff points are stated (e.g. 112), or null if only A-level grades (e.g. AAA) are given without a numeric tariff.
 5. For `fee_home_gbp` and `fee_intl_gbp`, return the annual full-time GBP tuition fee as a plain integer (e.g. 9535 or 17500), or null if not stated.
-6. In `evidence_quotes`, include short verbatim quotes (max 25 words each) from the page proving the key extracted claims for `entry_requirements`, `fees`, `usps`, `authentic_learning`, `accreditations`, and `employability_outcomes`.
+6. For normalised international entry requirements:
+   - `ielts_overall`: numeric float (e.g. 6.0 or 6.5) if IELTS Academic overall score is stated, else null.
+   - `ielts_min_component`: numeric float (e.g. 5.5 or 6.0) for the minimum sub-score in each skill, else null.
+   - `ib_points`: plain integer (e.g. 28, 32, 35) for International Baccalaureate Diploma total points if stated, else null.
+   - `english_alt_tests`: comma-separated list of alternative English tests/waivers explicitly mentioned (e.g. 'PTE, TOEFL, Duolingo, Pre-sessional English'), or 'Not stated on page'.
+   - `intl_foundation_pathway`: any named international foundation/pathway provider or route (e.g. 'ONCAMPUS Hull', 'Kaplan', 'INTO', 'International Foundation Year'), or 'Not stated on page'.
+   - `intl_entry_summary`: concise 1-sentence summary of international academic & English requirements stated on the page.
+7. In `evidence_quotes`, include short verbatim quotes (max 25 words each) from the page proving the key extracted claims for `entry_requirements`, `intl_entry`, `fees`, `usps`, `authentic_learning`, `accreditations`, and `employability_outcomes`.
 
 Return a single valid JSON object with EXACTLY these keys:
 {
   "entry_requirements": "string (e.g. '112 UCAS points (BBC at A-level); GCSE Maths & English grade 4/C')",
   "ucas_tariff_min": integer or null,
   "ucas_tariff_max": integer or null,
+  "ielts_overall": float or null,
+  "ielts_min_component": float or null,
+  "ib_points": integer or null,
+  "english_alt_tests": "string",
+  "intl_foundation_pathway": "string",
+  "intl_entry_summary": "string",
   "fees_home": "string (e.g. '£9,535 per year (UK full-time, 2026/27)' or 'Not stated on page')",
   "fee_home_gbp": integer or null,
   "fees_international": "string (e.g. '£17,500 per year (International full-time, 2026/27)' or 'Not stated on page')",
@@ -57,6 +70,7 @@ Return a single valid JSON object with EXACTLY these keys:
   "other_programmes": "string (foundation year, placement year, joint honours, or specialist pathways listed on page)",
   "evidence_quotes": {
     "entry_requirements": "short verbatim quote or ''",
+    "intl_entry": "short verbatim quote or ''",
     "fees": "short verbatim quote or ''",
     "usps": "short verbatim quote or ''",
     "authentic_learning": "short verbatim quote or ''",
@@ -72,6 +86,12 @@ def empty_extraction(note: str = "LLM extraction skipped") -> dict[str, Any]:
         "entry_requirements": note,
         "ucas_tariff_min": None,
         "ucas_tariff_max": None,
+        "ielts_overall": None,
+        "ielts_min_component": None,
+        "ib_points": None,
+        "english_alt_tests": note,
+        "intl_foundation_pathway": note,
+        "intl_entry_summary": note,
         "fees_home": note,
         "fee_home_gbp": None,
         "fees_international": note,

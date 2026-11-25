@@ -84,3 +84,10 @@ usage_id,called_at,provider,model_or_endpoint,course_key,status,input_tokens,out
 83,2026-11-24T14:49:19Z,gemini,gemini-3.5-flash-lite,leeds-bm-ug,cache_hit,0,0,0,0.0,0
 84,2026-11-24T14:49:35Z,pagespeed,psi-mobile,leeds-bm-ug,ok,0,0,0,0.0,16033
 85,2026-11-24T14:49:52Z,pagespeed,psi-desktop,leeds-bm-ug,ok,0,0,0,0.0,16053
+86,2026-11-25T14:52:50Z,gemini,gemini-3.6-flash,hull-bm-ug,ok,6460,914,9518,0.001517,17947
+87,2026-11-25T14:53:41Z,gemini,gemini-3.6-flash,leeds-beckett-bm-ug,ok,9508,920,12071,0.001978,16175
+88,2026-11-25T14:54:26Z,gemini,gemini-3.6-flash,york-st-john-bm-ug,ok,7095,965,9996,0.001643,18334
+89,2026-11-25T14:54:58Z,gemini,gemini-3.6-flash,lincoln-bm-ug,ok,7879,1088,10481,0.001835,13294
+90,2026-11-25T14:55:38Z,gemini,gemini-3.6-flash,sheffield-hallam-bm-ug,ok,16773,1238,19548,0.003259,13406
+91,2026-11-25T14:56:19Z,gemini,gemini-3.6-flash,york-bm-ug,ok,6314,956,9769,0.001521,15993
+92,2026-11-25T14:57:03Z,gemini,gemini-3.6-flash,leeds-bm-ug,ok,7601,1348,11295,0.001949,28331

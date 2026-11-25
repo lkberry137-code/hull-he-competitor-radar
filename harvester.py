@@ -407,7 +407,7 @@ def harvest_page_playwright(
             extra_tab_texts: list[str] = []
             seen_tab_snippets: set[str] = set()
             tab_pattern = re.compile(
-                r"(year\s*[1-4]|final\s*year|stage\s*[1-4]|level\s*[4-6]|module|what\s+you('ll|’ll|\s+will)\s+study|course\s+(content|structure)|core\s+modules|optional\s+modules|fees|tuition|funding|international\s+students?)",
+                r"(year\s*[1-4]|final\s*year|stage\s*[1-4]|level\s*[4-6]|module|what\s+you('ll|’ll|\s+will)\s+study|course\s+(content|structure)|core\s+modules|optional\s+modules|fees|tuition|funding|international|english\s+language|ielts|entry\s+requirements?)",
                 re.IGNORECASE,
             )
             controls = page.locator("button, [role='tab'], a[href^='#'], summary")

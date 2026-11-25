@@ -217,8 +217,14 @@
     let ACTIVE_DEVICE = "mobile";
 
     const MATRIX_ROWS = [
-      { label: "Entry Requirements", key: "entry_requirements", quoteKey: "entry_requirements" },
+      { label: "Entry Requirements (Home / UK)", key: "entry_requirements", quoteKey: "entry_requirements" },
       { label: "UCAS Tariff Range", fn: (s) => (s.ucas_tariff_min ? `${s.ucas_tariff_min}${s.ucas_tariff_max && s.ucas_tariff_max !== s.ucas_tariff_min ? '–' + s.ucas_tariff_max : ''} pts` : "Not stated / Grades only") },
+      { label: "Intl Entry — IELTS (Normalised)", fn: (s) => (s.ielts_overall ? `IELTS ${Number(s.ielts_overall).toFixed(1)}${s.ielts_min_component ? ' (min ' + Number(s.ielts_min_component).toFixed(1) + ')' : ''}` : "Not stated on page") },
+      { label: "Intl Entry — IB Diploma (Normalised)", fn: (s) => (s.ib_points ? `${s.ib_points} IB points` : "Not stated on page") },
+      { label: "Intl Entry — Summary & Alt English Tests", fn: (s) => {
+          const parts = [s.intl_entry_summary, s.english_alt_tests && s.english_alt_tests !== 'Not stated on page' ? `Alt tests: ${s.english_alt_tests}` : '', s.intl_foundation_pathway && s.intl_foundation_pathway !== 'Not stated on page' ? `Pathway: ${s.intl_foundation_pathway}` : ''].filter(Boolean);
+          return parts.length ? parts.join(" · ") : "Not stated on page";
+        }, quoteKey: "intl_entry" },
       { label: "Tuition Fees — Home (UK)", key: "fees_home", quoteKey: "fees" },
       { label: "Tuition Fees — International", key: "fees_international" },
       { label: "TEF Rating", instFn: (i) => i.tef_rating || "—" },
