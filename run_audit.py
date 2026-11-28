@@ -190,6 +190,7 @@ def run_intl_countries_audit(config: dict[str, Any], args: argparse.Namespace) -
             continue
 
         is_single_hub = "{country}" not in tpl
+        use_pw = bool(inst.get("intl_use_playwright"))
         for country in countries:
             slug = country.lower().replace(" ", "-")
             url = tpl if is_single_hub else tpl.replace("{country}", slug)
@@ -199,10 +200,17 @@ def run_intl_countries_audit(config: dict[str, Any], args: argparse.Namespace) -
             if is_single_hub and url in hub_cache:
                 raw_harvest = hub_cache[url]
             else:
-                # Lightweight HTTP fetch first with 24h local cache; fallback to Playwright if thin
+                # Use Playwright for JS-rendered country pages (e.g. Hull Contensis tabs), else lightweight requests
                 cached = None if args.force_refresh else harvester._load_fresh_cache(url, 24.0)
-                if cached:
+                if cached and (not use_pw or cached.get("word_count", 0) >= 350):
                     raw_harvest = cached
+                elif use_pw:
+                    try:
+                        raw_harvest = harvester.harvest_page_playwright(url, force_refresh=args.force_refresh)
+                    except Exception as exc:
+                        print(f"    [ERROR] {exc}")
+                        continue
+                    time.sleep(1.5)
                 else:
                     try:
                         raw_harvest = harvester.harvest_page_requests(url, timeout=20)
